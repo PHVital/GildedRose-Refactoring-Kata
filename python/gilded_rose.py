@@ -1,39 +1,27 @@
 # -*- coding: utf-8 -*-
 
+from updater import AgedBrieUpdater, SulfurasUpdater, BackstagePassesUpdater, ConjuredUpdater, ItemUpdater # noqa
+
+
 class GildedRose(object):
 
     def __init__(self, items):
         self.items = items
+        self.updater_strategies = {
+            "Aged Brie": AgedBrieUpdater,
+            "Sulfuras, Hand of Ragnaros": SulfurasUpdater,
+            "Backstage passes to a TAFKAL80ETC concert": BackstagePassesUpdater, # noqa
+            "Conjured Mana Cake": ConjuredUpdater
+        }
 
     def update_quality(self):
         for item in self.items:
-            if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
-                if item.quality > 0:
-                    if item.name != "Sulfuras, Hand of Ragnaros":
-                        item.quality = item.quality - 1
-            else:
-                if item.quality < 50:
-                    item.quality = item.quality + 1
-                    if item.name == "Backstage passes to a TAFKAL80ETC concert":
-                        if item.sell_in < 11:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-                        if item.sell_in < 6:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-            if item.name != "Sulfuras, Hand of Ragnaros":
-                item.sell_in = item.sell_in - 1
-            if item.sell_in < 0:
-                if item.name != "Aged Brie":
-                    if item.name != "Backstage passes to a TAFKAL80ETC concert":
-                        if item.quality > 0:
-                            if item.name != "Sulfuras, Hand of Ragnaros":
-                                item.quality = item.quality - 1
-                    else:
-                        item.quality = item.quality - item.quality
-                else:
-                    if item.quality < 50:
-                        item.quality = item.quality + 1
+            UpdaterClass = self.updater_strategies.get(item.name, ItemUpdater)
+
+            updater = UpdaterClass(item)
+
+            updater.update_sell_in()
+            updater.update_quality()
 
 
 class Item:
